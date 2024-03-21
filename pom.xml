@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+TUD TAS Backend for the assistance system developed as part of the VerDatAs project
+Copyright (C) 2022-2024 TU Dresden (Robert Peine, Robert Schmidt, Sebastian Kucharski)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.6</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>de.tud.tas</groupId>
+    <artifactId>backend</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>TUD TAS Backend</name>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3</name>
+            <url>http://www.gnu.org/licenses/</url>
+            <distribution>Manual</distribution>
+        </license>
+    </licenses>
+
+
+    <modules>
+        <module>app</module>
+        <module>learning-locker-api-spec</module>
+        <module>tud-assistance-backbone-api-spec</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jar.name>tas-backend</jar.name>
+        <main.class>de.tud.tas.backend.app.BackendApplication</main.class>
+
+        <dockerRegistry>registry-1.docker.io</dockerRegistry>
+        <dockerImagePath>${dockerRegistry}/tud/tas-backend</dockerImagePath>
+        <dockerImageTag>${project.version}</dockerImageTag>
+        <docker.image>${dockerImagePath}:${dockerImageTag}</docker.image>
+        <docker.image.src.root>src/main/docker</docker.image.src.root>
+        <docker.file.name>Dockerfile</docker.file.name>
+        <resources.root>src/main/resources</resources.root>
+        <docker.build.directory>${project.build.directory}/docker-build</docker.build.directory>
+
+        <io.fabric8.version>0.40.3</io.fabric8.version>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <license.maven.plugin.version>2.4.0</license.maven.plugin.version>
+
+        <skipUnitTests>false</skipUnitTests>
+        <skipIntegrationTests>false</skipIntegrationTests>
+        <build.helper.maven.plugin.version>3.3.0</build.helper.maven.plugin.version>
+
+        <org.springdoc.version>1.6.13</org.springdoc.version>
+        <org.bouncycastle.version>1.70</org.bouncycastle.version>
+        <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
+        <slf4j.json.logger.version>2.0.2</slf4j.json.logger.version>
+        <org.projectlombok.lombok.version>1.18.24</org.projectlombok.lombok.version>
+        <org.projectlombok.lombok.mapstruct.binding.version>0.2.0</org.projectlombok.lombok.mapstruct.binding.version>
+        <org.apache.maven.plugins.maven.remote.resources.plugin.version>3.0.0
+        </org.apache.maven.plugins.maven.remote.resources.plugin.version>
+        <org.openapitools.openapi.generator.maven.plugin.version>7.1.0
+        </org.openapitools.openapi.generator.maven.plugin.version>
+        <jackson.databind.nullable.version>0.2.6</jackson.databind.nullable.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <jackson.datatype.jsr310.version>2.15.2</jackson.datatype.jsr310.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>app</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>learning-locker-api-spec</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>tud-assistance-backbone-api-spec</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-ui</artifactId>
+                <version>${org.springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${org.bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${org.mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.savoirtech.logging</groupId>
+                <artifactId>slf4j-json-logger</artifactId>
+                <version>${slf4j.json.logger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openapitools</groupId>
+                <artifactId>jackson-databind-nullable</artifactId>
+                <version>${jackson.databind.nullable.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr305.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.datatype.jsr310.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>dev</id>
+            <name>Local repository</name>
+            <url>file://${user.home}/.m2/repository</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <layers>
+                            <enabled>true</enabled>
+                        </layers>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${org.projectlombok.lombok.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>${org.projectlombok.lombok.mapstruct.binding.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${org.mapstruct.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${io.fabric8.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-remote-resources-plugin</artifactId>
+                    <version>${org.apache.maven.plugins.maven.remote.resources.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${org.openapitools.openapi.generator.maven.plugin.version}</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <skipTests>true</skipTests>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>unit-tests</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <configuration>
+                                <!--suppress MavenModelInspection -->
+                                <skipTests>${skip.unit.tests}</skipTests>
+                                <excludes>
+                                    <exclude>**/*IT</exclude>
+                                </excludes>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <phase>integration-test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <configuration>
+                                <!--suppress MavenModelInspection -->
+                                <skipTests>${skip.integration.tests}</skipTests>
+                                <excludes>
+                                    <exclude>none</exclude>
+                                </excludes>
+                                <includes>
+                                    <include>**/*IT</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build.helper.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>determine-if-unit-tests-should-be-executed</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                skipTests = session.getSystemProperties().getProperty("skipTests");
+                                skip.unit.tests = (skipTests == null ? false : Boolean.parseBoolean(skipTests)) ||
+                                ${skipUnitTests};
+                            </source>
+                            <properties>
+                                <property>skip.unit.tests</property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>determine-if-integration-tests-should-be-executed</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                skipTests = session.getSystemProperties().getProperty("skipTests");
+                                skip.integration.tests = (skipTests == null ? false : Boolean.parseBoolean(skipTests))
+                                || ${skipIntegrationTests};
+                            </source>
+                            <properties>
+                                <property>skip.integration.tests</property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${license.maven.plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>

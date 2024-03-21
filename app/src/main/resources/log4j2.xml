@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="warn">
+    <Properties>
+        <Property name="LOG_DIR">${env:LOG_PATH}</Property>
+    </Properties>
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{${sys:PID}}{magenta} [%15.15t] %style{%-40.40C{1.}}{cyan} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+        </Console>
+        <RollingFile
+                name="RollingFile"
+                fileName="${LOG_DIR}/learning-record.log"
+                filePattern="${LOG_DIR}/learning-record.%i.log.gz"
+                ignoreExceptions="false">
+            <PatternLayout>
+                <pattern>%m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1000MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5">
+                <Delete basePath="${LOG_DIR}" maxDepth="2">
+                    <IfFileName glob="*/learning-record*.log.gz"/>
+                    <IfLastModified age="P30D"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </appenders>
+    <Loggers>
+        <Logger name="LearningRecordLogger" level="debug" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</configuration>

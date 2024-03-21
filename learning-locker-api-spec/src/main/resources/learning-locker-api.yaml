@@ -1,0 +1,373 @@
+#  TUD TAS Backend for the assistance system developed as part of the VerDatAs project
+#  Copyright (C) 2022-2024 TU Dresden (Sebastian Kucharski)
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+openapi: 3.0.3
+info:
+  title: Learning Locker API
+  description: |-
+    Based on https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#parttwo
+    All strings MUST be encoded and interpreted as UTF-8.
+  version: 0.0.1
+tags:
+  - name: Statements
+    description: Manage xAPI statements.
+security:
+  - basicAuth: [ ]
+paths:
+  /statements:
+    put:
+      tags:
+        - Statements
+      operationId: storeStatement
+      summary: Stores a single Statement with the given id. POST can also be used
+        to store single Statements.
+      description: Stores a single `Statement` with the given id. POST can also be
+        used to store single Statements.
+      parameters:
+        - name: method
+          in: query
+          description: a MUST
+          required: true
+          schema:
+            type: string
+            default: PUT
+        - name: statementId
+          in: query
+          description: Id of Statement to record
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Statement'
+        required: true
+      responses:
+        "204":
+          description: Default response
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content: {}
+        "409":
+          description: "If the LRS receives a Statement with an id it already has\
+            \ a Statement for, it SHOULD verify the received Statement matches the\
+            \ existing one and SHOULD return 409 Conflict if they do not match. See\
+            \ Statement comparison requirements."
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content: {}
+        "400":
+          description: "If the LRS receives a batch of Statements containing two or\
+            \ more Statements with the same id, it SHOULD* reject the batch and return\
+            \ 400 Bad Request."
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content: {}
+      x-codegen-request-body-name: body
+    post:
+      tags:
+        - Statements
+      operationId: storeStatements
+      summary: "Stores a Statement, or a set of Statements."
+      description: "Stores a Statement, or a set of Statements. An array of Statements\
+        \ or a single Statement to be stored."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Statement'
+        required: true
+      responses:
+        "200":
+          description: Array of Statement id(s) (UUID) in the same order as the corresponding
+            stored Statements.
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: Array of Statement id(s) (UUID) in the same order as
+                    the corresponding stored Statements.
+        "409":
+          description: "If the LRS receives a Statement with an id it already has\
+            \ a Statement for, it SHOULD verify the received Statement matches the\
+            \ existing one and SHOULD return 409 Conflict if they do not match. See\
+            \ Statement comparison requirements."
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content: {}
+        "400":
+          description: "If the LRS receives a batch of Statements containing two or\
+            \ more Statements with the same id, it SHOULD* reject the batch and return\
+            \ 400 Bad Request."
+          headers:
+            X-Experience-API-Consistent-Through:
+              description: The LRS MUST include the header "X-Experience-API-Consistent-Through"
+                on all responses to Statements Resource requests.
+              schema:
+                type: string
+                format: date-time
+          content: {}
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    MetaStatement:
+      type: object
+      properties:
+        stored:
+          type: string
+        active:
+          type: boolean
+        completedForwardingQueue:
+          $ref: '#/components/schemas/EmptyArray'
+        failedForwardingLog:
+          $ref: '#/components/schemas/EmptyArray'
+        client:
+          type: string
+        lrs_id:
+          type: string
+        completedQueues:
+          $ref: '#/components/schemas/EmptyArray'
+        activities:
+          $ref: '#/components/schemas/ObjectArray'
+        hash:
+          type: string
+        agents:
+          $ref: '#/components/schemas/ObjectArray'
+        statement:
+          $ref: '#/components/schemas/Statement'
+        hasGeneratedId:
+          type: boolean
+        deadForwardingQueue:
+          $ref: '#/components/schemas/EmptyArray'
+        voided:
+          type: boolean
+        verbs:
+          $ref: '#/components/schemas/ObjectArray'
+        processingQueues:
+          $ref: '#/components/schemas/EmptyArray'
+        person:
+          type: object
+          properties: {}
+        timestamp:
+          type: string
+        relatedActivities:
+          $ref: '#/components/schemas/ObjectArray'
+        relatedAgents:
+          $ref: '#/components/schemas/ObjectArray'
+        organisation:
+          type: string
+        _id:
+          type: string
+        registrations:
+          $ref: '#/components/schemas/EmptyArray'
+        pendingForwardingQueue:
+          $ref: '#/components/schemas/EmptyArray'
+    ObjectArray:
+      type: array
+      items:
+        type: string
+    EmptyArray:
+      type: array
+      items:
+        type: object
+        properties: {}
+    Statement:
+      required:
+        - actor
+        - authority
+        - id
+        - object
+        - verb
+      type: object
+      properties:
+        authority:
+          $ref: '#/components/schemas/Authority'
+        stored:
+          type: string
+        context:
+          $ref: '#/components/schemas/Context'
+        actor:
+          $ref: '#/components/schemas/Actor'
+        timestamp:
+          type: string
+        version:
+          type: string
+        id:
+          type: string
+        result:
+          $ref: '#/components/schemas/Result'
+        verb:
+          $ref: '#/components/schemas/Verb'
+        object:
+          $ref: '#/components/schemas/Object'
+    Actor:
+      type: object
+      properties:
+        objectType:
+          type: string
+        account:
+          type: object
+          properties:
+            homePage:
+              type: string
+            name:
+              type: string
+        name:
+          type: string
+    Context:
+      type: object
+      properties:
+        contextActivities:
+          $ref: '#/components/schemas/ContextActivities'
+        extensions:
+          $ref: '#/components/schemas/Extensions'
+    ContextActivities:
+      type: object
+      properties:
+        parent:
+          $ref: '#/components/schemas/Parent'
+        grouping:
+          $ref: '#/components/schemas/Grouping'
+    Parent:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          definition:
+            $ref: '#/components/schemas/Definition'
+          objectType:
+            type: string
+    Grouping:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          definition:
+            $ref: '#/components/schemas/Definition'
+          objectType:
+            type: string
+    Definition:
+      type: object
+      properties:
+        name:
+          type: object
+          properties:
+            en-US:
+              type: string
+        type:
+          type: string
+        description:
+          type: object
+          properties:
+            en-US:
+              type: string
+    Extensions:
+      type: object
+      properties:
+        http://ilias.event:
+          type: string
+        http://ilias.version:
+          type: string
+        http://ilias.plugin:
+          type: string
+        http://ilias.Events2Lrs:
+          type: string
+        https://w3id.org/xapi/lms/extensions/sessionid:
+          type: string
+    Authority:
+      type: object
+      properties:
+        objectType:
+          type: string
+        name:
+          type: string
+        mbox:
+          type: string
+    Verb:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+        display:
+          type: object
+          properties:
+            en-US:
+              type: string
+          description: "The human readable representation of the Verb in one or more\
+            \ languages. This does not have any impact on the meaning of the Statement,\
+            \ but serves to give a human-readable display of the meaning already determined\
+            \ by the chosen Verb."
+      example:
+        id: http://example.com/xapi/verbs#defenestrated
+        display:
+          en-US: defenestrated
+          es: defenestrado
+    Object:
+      type: object
+      properties:
+        id:
+          type: string
+        definition:
+          $ref: '#/components/schemas/Definition'
+        objectType:
+          type: string
+    Result:
+      type: object
+      properties:
+        duration:
+          type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

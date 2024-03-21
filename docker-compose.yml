@@ -1,0 +1,87 @@
+#  TUD TAS Backend for the assistance system developed as part of the VerDatAs project
+#  Copyright (C) 2022-2024 TU Dresden (Robert Schmidt, Sebastian Kucharski)
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+version: '3.8'
+services:
+  backend:
+    image: registry-1.docker.io/tud/tas-backend:${BACKEND_DOCKER_TAG}
+    container_name: tas-backend
+    user: "33:33"
+    env_file:
+      - ttb.env
+    environment:
+      - MONGODB_BACKEND_DATABASE=backend
+      - MONGODB_BACKEND_HOST=mongo
+      - TUD_ASSISTANCE_BACKBONE_URL=http://host:8051
+      - SWAGGER_SERVER_URL=${SWAGGER_SERVER_URL}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tas-backend-network
+    volumes:
+      - ./log:/var/log/tas-backend
+  mongo:
+    image: mongo:5.0.2
+    container_name: tas-backend-mongo-db
+    expose:
+      - "27017"
+    networks:
+      - tas-backend-network
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: tas-backend-mongo-data
+        target: /data/db
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+  mongoinit:
+    image: mongo:5.0.2
+    container_name: tas-backend-mongo-db-initializer
+    restart: "no"
+    networks:
+      - tas-backend-network
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command: >
+      mongo --host mongo:27017 --eval 
+      '
+      db = (new Mongo("mongo:27017")).getDB("test");
+      config = {
+      "_id" : "dbrs",
+      "members" : [
+        {
+          "_id" : 0,
+          "host" : "mongo:27017"
+        }
+      ]
+      };
+      rs.initiate(config);
+      '
+
+volumes:
+  tas-backend-mongo-data:
+
+networks:
+  tas-backend-network:
